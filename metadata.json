@@ -2,5 +2,7 @@
   "name": "Student Task & Study Hub",
   "description": "Comprehensive student task management app featuring smart reminders, calendar sync with Google Calendar & iCal export/import, and interactive group study collaboration tools.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

@@ -38,7 +38,12 @@ interface AppContextType {
   // Study Group Actions
   activeGroup: StudyGroup | null;
   setActiveGroupId: (groupId: string | null) => void;
-  createStudyGroup: (group: Omit<StudyGroup, 'id' | 'members' | 'sharedTasks' | 'notes' | 'flashcards' | 'chatMessages' | 'upcomingSessions' | 'pomodoroState'>) => void;
+  createStudyGroup: (group: Omit<StudyGroup, 'id' | 'members' | 'sharedTasks' | 'notes' | 'flashcards' | 'chatMessages' | 'upcomingSessions' | 'pomodoroState'> & { initialFriendNames?: string[] }) => void;
+  inviteFriendToGroup: (groupId: string, name: string, email?: string) => void;
+  removeFriendFromGroup: (groupId: string, memberId: string) => void;
+  joinGroupByCode: (roomCode: string) => boolean;
+  inviteModalGroupId: string | null;
+  setInviteModalGroupId: (id: string | null) => void;
   addGroupTask: (groupId: string, task: Omit<GroupTask, 'id'>) => void;
   toggleGroupTaskStatus: (groupId: string, taskId: string) => void;
   addGroupNote: (groupId: string, note: Omit<StudyNote, 'id' | 'updatedAt'>) => void;
@@ -53,8 +58,8 @@ interface AppContextType {
   deleteCourse: (courseId: string) => void;
 
   // UI state
-  activeModal: 'create-task' | 'edit-task' | 'create-group' | 'import-ics' | 'manage-courses' | 'add-course' | null;
-  setActiveModal: (modal: 'create-task' | 'edit-task' | 'create-group' | 'import-ics' | 'manage-courses' | 'add-course' | null) => void;
+  activeModal: 'create-task' | 'edit-task' | 'create-group' | 'join-group' | 'import-ics' | 'manage-courses' | 'add-course' | null;
+  setActiveModal: (modal: 'create-task' | 'edit-task' | 'create-group' | 'join-group' | 'import-ics' | 'manage-courses' | 'add-course' | null) => void;
   editingTask: Task | null;
   setEditingTask: (task: Task | null) => void;
   showReminderDrawer: boolean;
@@ -88,7 +93,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [tasks, setTasks] = useState<Task[]>(() => {
     try {
       const saved = localStorage.getItem('sh_tasks');
-      return saved ? JSON.parse(saved) : INITIAL_TASKS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.map(t => ({
+            ...t,
+            subtasks: Array.isArray(t.subtasks) ? t.subtasks : [],
+            tags: Array.isArray(t.tags) ? t.tags : [],
+          }));
+        }
+      }
+      return INITIAL_TASKS;
     } catch {
       return INITIAL_TASKS;
     }
@@ -97,7 +112,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [studyGroups, setStudyGroups] = useState<StudyGroup[]>(() => {
     try {
       const saved = localStorage.getItem('sh_groups');
-      return saved ? JSON.parse(saved) : INITIAL_STUDY_GROUPS;
+      if (saved) {
+        if (saved.includes('images.unsplash.com') || saved.includes('Alex Rivera') || saved.includes('Maya Chen')) {
+          localStorage.setItem('sh_groups', JSON.stringify(INITIAL_STUDY_GROUPS));
+          return INITIAL_STUDY_GROUPS;
+        }
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(g => ({
+            ...g,
+            members: Array.isArray(g.members) ? g.members : [],
+            sharedTasks: Array.isArray(g.sharedTasks) ? g.sharedTasks : [],
+            notes: Array.isArray(g.notes) ? g.notes : [],
+            flashcards: Array.isArray(g.flashcards) ? g.flashcards : [],
+            chatMessages: Array.isArray(g.chatMessages) ? g.chatMessages : [],
+            upcomingSessions: Array.isArray(g.upcomingSessions) ? g.upcomingSessions : [],
+            pomodoroState: g.pomodoroState || {
+              isRunning: false,
+              mode: 'focus',
+              secondsRemaining: 25 * 60,
+              currentTopic: `${g.courseCode || 'Study'} Session`,
+            },
+          }));
+        }
+        return INITIAL_STUDY_GROUPS;
+      }
+      return INITIAL_STUDY_GROUPS;
     } catch {
       return INITIAL_STUDY_GROUPS;
     }
@@ -112,7 +152,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>('default');
   
   const [activeGroupId, setActiveGroupIdState] = useState<string | null>(null);
-  const [activeModal, setActiveModal] = useState<'create-task' | 'edit-task' | 'create-group' | 'import-ics' | 'manage-courses' | 'add-course' | null>(null);
+  const [inviteModalGroupId, setInviteModalGroupId] = useState<string | null>(null);
+  const [activeModal, setActiveModal] = useState<'create-task' | 'edit-task' | 'create-group' | 'join-group' | 'import-ics' | 'manage-courses' | 'add-course' | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showReminderDrawer, setShowReminderDrawer] = useState<boolean>(false);
 
@@ -407,19 +448,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setActiveGroupIdState(id);
   };
 
-  const createStudyGroup = (groupData: Omit<StudyGroup, 'id' | 'members' | 'sharedTasks' | 'notes' | 'flashcards' | 'chatMessages' | 'upcomingSessions' | 'pomodoroState'>) => {
+  const createStudyGroup = (groupData: Omit<StudyGroup, 'id' | 'members' | 'sharedTasks' | 'notes' | 'flashcards' | 'chatMessages' | 'upcomingSessions' | 'pomodoroState'> & { initialFriendNames?: string[] }) => {
+    const code = groupData.roomCode || `${groupData.courseCode.replace(/[^A-Za-z0-9]/g, '').slice(0, 4).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+
+    const friendMembers = (groupData.initialFriendNames || []).map((friendName, idx) => ({
+      id: 'mem-friend-' + Date.now().toString(36) + idx,
+      name: friendName,
+      role: 'member' as const,
+      status: 'online' as const,
+      currentFocus: 'Joined room',
+      color: ['violet', 'emerald', 'amber', 'rose', 'cyan'][idx % 5],
+      invitedAt: new Date().toISOString(),
+    }));
+
     const newGroup: StudyGroup = {
       ...groupData,
       id: 'grp-' + Date.now().toString(36),
+      roomCode: code,
       members: [
         {
           id: 'mem-user',
-          name: 'Alex Rivera (You)',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces',
+          name: 'You (Host)',
           role: 'lead',
           status: 'online',
-          currentFocus: 'Group organizer',
+          currentFocus: 'Studying in room',
+          color: groupData.color || 'indigo',
+          isCurrentUser: true,
         },
+        ...friendMembers,
       ],
       sharedTasks: [],
       notes: [],
@@ -428,9 +484,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         {
           id: 'msg-welcome',
           senderId: 'mem-user',
-          senderName: 'Alex Rivera (You)',
-          senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces',
-          text: `Welcome to the ${groupData.name} collaboration hub! Let's conquer our coursework together.`,
+          senderName: 'You (Host)',
+          text: `Welcome to ${groupData.name}! Share room code ${code} to invite your friends and classmates to study together.`,
           timestamp: 'Just now',
         },
       ],
@@ -444,6 +499,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setStudyGroups(prev => [newGroup, ...prev]);
     setActiveGroupIdState(newGroup.id);
+  };
+
+  const inviteFriendToGroup = (groupId: string, name: string, email?: string) => {
+    const friendMember = {
+      id: 'mem-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name,
+      email,
+      role: 'member' as const,
+      status: 'online' as const,
+      currentFocus: 'Invited to study room',
+      color: 'emerald',
+      invitedAt: new Date().toISOString(),
+    };
+
+    const noticeMessage: GroupChatMessage = {
+      id: 'msg-' + Date.now().toString(36),
+      senderId: 'system',
+      senderName: 'Room Notice',
+      text: `👋 ${name} was invited to the study room!`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setStudyGroups(prev =>
+      prev.map(g => (g.id === groupId ? { ...g, members: [...g.members, friendMember], chatMessages: [...g.chatMessages, noticeMessage] } : g))
+    );
+    sounds.playTaskComplete();
+  };
+
+  const removeFriendFromGroup = (groupId: string, memberId: string) => {
+    setStudyGroups(prev =>
+      prev.map(g => (g.id === groupId ? { ...g, members: g.members.filter(m => m.id !== memberId) } : g))
+    );
+  };
+
+  const joinGroupByCode = (roomCode: string): boolean => {
+    const clean = roomCode.trim().toUpperCase();
+    const match = studyGroups.find(
+      g => g.roomCode?.toUpperCase() === clean || g.id.toUpperCase() === clean
+    );
+    if (match) {
+      setActiveGroupIdState(match.id);
+      setActiveTab('groups');
+      sounds.playTaskComplete();
+      return true;
+    }
+    return false;
   };
 
   const addGroupTask = (groupId: string, taskData: Omit<GroupTask, 'id'>) => {
@@ -501,8 +602,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newMsg: GroupChatMessage = {
       id: 'msg-' + Date.now().toString(36),
       senderId: 'mem-user',
-      senderName: 'Alex Rivera (You)',
-      senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces',
+      senderName: 'You (Host)',
       text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isQuestion,
@@ -642,6 +742,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         activeGroup,
         setActiveGroupId,
         createStudyGroup,
+        inviteFriendToGroup,
+        removeFriendFromGroup,
+        joinGroupByCode,
+        inviteModalGroupId,
+        setInviteModalGroupId,
         addGroupTask,
         toggleGroupTaskStatus,
         addGroupNote,

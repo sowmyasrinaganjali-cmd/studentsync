@@ -54,10 +54,14 @@ export interface Task {
 export interface StudyMember {
   id: string;
   name: string;
-  avatar: string;
+  avatar?: string;
+  color?: string;
+  email?: string;
   role: 'lead' | 'member';
   status: 'online' | 'studying' | 'away' | 'offline';
   currentFocus?: string;
+  isCurrentUser?: boolean;
+  invitedAt?: string;
 }
 
 export interface GroupTask {
@@ -90,7 +94,7 @@ export interface GroupChatMessage {
   id: string;
   senderId: string;
   senderName: string;
-  senderAvatar: string;
+  senderAvatar?: string;
   text: string;
   timestamp: string;
   isQuestion?: boolean;
@@ -113,6 +117,7 @@ export interface StudyGroup {
   courseId: string;
   description: string;
   color: string;
+  roomCode: string; // e.g. "ALGO-301", "STUDY-482"
   members: StudyMember[];
   sharedTasks: GroupTask[];
   notes: StudyNote[];

@@ -12,6 +12,9 @@ export const GroupChat: React.FC<GroupChatProps> = ({ group }) => {
   const [inputText, setInputText] = useState('');
   const [isQuestion, setIsQuestion] = useState(false);
 
+  const members = Array.isArray(group.members) ? group.members : [];
+  const chatMessages = Array.isArray(group.chatMessages) ? group.chatMessages : [];
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim()) return;
@@ -32,13 +35,13 @@ export const GroupChat: React.FC<GroupChatProps> = ({ group }) => {
           </h3>
         </div>
         <span className="text-[11px] text-slate-400">
-          {group.members.length} members in squad
+          {members.length} members in squad
         </span>
       </div>
 
       {/* Messages feed */}
       <div className="flex-1 p-4 overflow-y-auto space-y-3">
-        {group.chatMessages.map(msg => {
+        {chatMessages.map(msg => {
           const isUser = msg.senderName.includes('(You)');
 
           return (
@@ -46,12 +49,9 @@ export const GroupChat: React.FC<GroupChatProps> = ({ group }) => {
               key={msg.id}
               className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}
             >
-              <img
-                src={msg.senderAvatar}
-                alt={msg.senderName}
-                className="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5 border border-slate-200"
-                referrerPolicy="no-referrer"
-              />
+              <div className="w-7 h-7 rounded-full shrink-0 mt-0.5 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-white shadow-2xs bg-indigo-600">
+                {msg.senderName.replace('(You)', '').replace('(Host)', '').trim().slice(0, 2).toUpperCase() || 'ME'}
+              </div>
 
               <div className={`max-w-[75%] space-y-1 ${isUser ? 'items-end' : 'items-start'}`}>
                 <div className={`flex items-center gap-1.5 text-[10px] text-slate-400 ${isUser ? 'justify-end' : ''}`}>

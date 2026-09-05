@@ -120,8 +120,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, course }) => {
     }
   };
 
-  const completedSubtasksCount = task.subtasks.filter(s => s.completed).length;
-  const totalSubtasksCount = task.subtasks.length;
+  const subtasks = Array.isArray(task.subtasks) ? task.subtasks : [];
+  const completedSubtasksCount = subtasks.filter(s => s.completed).length;
+  const totalSubtasksCount = subtasks.length;
   const subtaskProgress = totalSubtasksCount > 0 ? (completedSubtasksCount / totalSubtasksCount) * 100 : 0;
 
   const handleEdit = () => {
@@ -286,7 +287,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, course }) => {
               {/* Expanded Subtask items & Quick Add */}
               {expanded && (
                 <div className="mt-2.5 space-y-2 pl-1 border-l-2 border-indigo-100">
-                  {task.subtasks.map(st => (
+                  {subtasks.map(st => (
                     <div 
                       key={st.id} 
                       className="flex items-center justify-between gap-2 text-xs text-slate-700 hover:bg-slate-50 p-1 rounded-sm"

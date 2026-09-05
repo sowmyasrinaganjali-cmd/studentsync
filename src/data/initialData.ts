@@ -180,28 +180,34 @@ export const INITIAL_TASKS: Task[] = [
 export const INITIAL_STUDY_GROUPS: StudyGroup[] = [
   {
     id: 'group-cs',
-    name: 'CS 301 Algorithm Ninjas',
+    name: 'CS 301 Algorithms & Data Structures Room',
     courseCode: 'CS 301',
     courseId: 'course-cs301',
-    description: 'Weekly problem walkthroughs, LeetCode style drills, and project testing review for Data Structures.',
+    description: 'Collaborative problem solving, coding drills, and exam review for Data Structures.',
     color: 'indigo',
+    roomCode: 'ALGO-301',
     members: [
-      { id: 'mem-1', name: 'Alex Rivera (You)', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces', role: 'lead', status: 'studying', currentFocus: 'Graph traversal tests' },
-      { id: 'mem-2', name: 'Maya Chen', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=faces', role: 'member', status: 'studying', currentFocus: 'AVL Tree rotations' },
-      { id: 'mem-3', name: 'Liam Becker', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces', role: 'member', status: 'online', currentFocus: 'Reviewing Dijkstra edge cases' },
-      { id: 'mem-4', name: 'Priya Patel', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces', role: 'member', status: 'away', currentFocus: 'Taking a 10m break' },
+      { 
+        id: 'mem-user', 
+        name: 'You (Host)', 
+        role: 'lead', 
+        status: 'studying', 
+        currentFocus: 'Graph traversal and AVL tree rotations',
+        isCurrentUser: true,
+        color: 'indigo',
+      },
     ],
     sharedTasks: [
-      { id: 'gt-1', title: 'Create unified test cases for AVL Tree edge scenarios', assignedToMemberId: 'mem-2', dueDate: '2026-09-06T15:00', priority: 'high', status: 'in_progress' },
-      { id: 'gt-2', title: 'Benchmark Dijkstra vs A* on 10,000 node graph', assignedToMemberId: 'mem-1', dueDate: '2026-09-06T17:00', priority: 'high', status: 'todo' },
-      { id: 'gt-3', title: 'Prepare slide deck for Week 5 Group Code Review', assignedToMemberId: 'mem-3', dueDate: '2026-09-08T12:00', priority: 'medium', status: 'todo' },
+      { id: 'gt-1', title: 'Create test cases for AVL Tree edge balance scenarios', dueDate: '2026-09-06T15:00', priority: 'high', status: 'in_progress' },
+      { id: 'gt-2', title: 'Benchmark Dijkstra vs A* shortest path search', dueDate: '2026-09-06T17:00', priority: 'high', status: 'todo' },
+      { id: 'gt-3', title: 'Prepare slide deck for Week 5 Group Code Review', dueDate: '2026-09-08T12:00', priority: 'medium', status: 'todo' },
     ],
     notes: [
       {
         id: 'note-1',
         title: 'AVL Tree Balance Factor Cheat Sheet',
         content: `### AVL Rebalancing Rules\n\n- **Balance Factor** = Height(Left) - Height(Right)\n- Rebalance is triggered when $|BF| > 1$.\n\n#### The 4 Rotation Cases:\n1. **Left-Left (LL)**: Single Right Rotation about root\n2. **Right-Right (RR)**: Single Left Rotation about root\n3. **Left-Right (LR)**: Left rotation on left child, then Right rotation on root\n4. **Right-Left (RL)**: Right rotation on right child, then Left rotation on root\n\n*Time Complexity*: Search $O(\\log N)$, Insert $O(\\log N)$, Delete $O(\\log N)$.`,
-        authorName: 'Maya Chen',
+        authorName: 'You',
         updatedAt: '2026-09-04T15:20:00Z',
         tags: ['trees', 'avl', 'formulas'],
       },
@@ -209,7 +215,7 @@ export const INITIAL_STUDY_GROUPS: StudyGroup[] = [
         id: 'note-2',
         title: 'Graph Traversal Complexity Comparison',
         content: `### BFS vs DFS vs Dijkstra\n\n- **BFS (Breadth-First)**: Uses Queue. Finds shortest unweighted path. $O(V + E)$ time.\n- **DFS (Depth-First)**: Uses Stack / Recursion. Good for topological sorting and cycle detection. $O(V + E)$ time.\n- **Dijkstra**: Uses Min-Heap Priority Queue. Finds single-source shortest path on non-negative edge weights. $O((V + E) \\log V)$ time with Binary Heap.`,
-        authorName: 'Alex Rivera',
+        authorName: 'You',
         updatedAt: '2026-09-04T18:00:00Z',
         tags: ['graphs', 'algorithms'],
       },
@@ -221,13 +227,10 @@ export const INITIAL_STUDY_GROUPS: StudyGroup[] = [
       { id: 'fc-4', question: 'What condition triggers an LR (Left-Right) double rotation?', answer: 'When a node has a balance factor of +2 and its left child has a balance factor of -1.', hint: 'Zig-zag insertion shape.' },
     ],
     chatMessages: [
-      { id: 'msg-1', senderId: 'mem-2', senderName: 'Maya Chen', senderAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=faces', text: 'Hey team! Pushed the skeleton repo for the AVL test suite. Check the github repo if you get stuck.', timestamp: '10:14 AM' },
-      { id: 'msg-2', senderId: 'mem-3', senderName: 'Liam Becker', senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces', text: 'Awesome, reviewing it now. Are we still hopping into the live Pomodoro room at 2 PM?', timestamp: '10:22 AM' },
-      { id: 'msg-3', senderId: 'mem-1', senderName: 'Alex Rivera (You)', senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces', text: 'Yes! Let’s do two 25-minute sprints back to back to finish the graph search tests.', timestamp: '10:25 AM' },
+      { id: 'msg-1', senderId: 'mem-user', senderName: 'You (Host)', text: 'Study room created! Share room code ALGO-301 or invite your classmates to study together.', timestamp: 'Room Created' },
     ],
     upcomingSessions: [
-      { id: 'sess-1', title: 'Midterm 1 Mock Exam & Live Coding Sprint', date: '2026-09-07T16:00', durationMinutes: 90, topic: 'AVL Tree Deletions & Graph Shortest Paths', location: 'Turing Hall Study Room 3B / Virtual', attendeeIds: ['mem-1', 'mem-2', 'mem-3', 'mem-4'] },
-      { id: 'sess-2', title: 'Problem Set 4 Peer Review', date: '2026-09-09T18:00', durationMinutes: 60, topic: 'Disjoint Set Union & Minimum Spanning Trees', location: 'Virtual Study Room', attendeeIds: ['mem-1', 'mem-2', 'mem-3'] },
+      { id: 'sess-1', title: 'Midterm 1 Mock Exam & Live Coding Sprint', date: '2026-09-07T16:00', durationMinutes: 90, topic: 'AVL Tree Deletions & Graph Shortest Paths', location: 'Virtual Study Room', attendeeIds: ['mem-user'] },
     ],
     pomodoroState: {
       isRunning: false,
@@ -238,26 +241,33 @@ export const INITIAL_STUDY_GROUPS: StudyGroup[] = [
   },
   {
     id: 'group-math',
-    name: 'Linear Algebra Cohort',
+    name: 'Linear Algebra Study Room',
     courseCode: 'MATH 220',
     courseId: 'course-math220',
     description: 'Collaborative homework problem solving, proof discussions, and matrix mechanics.',
     color: 'violet',
+    roomCode: 'MATH-220',
     members: [
-      { id: 'mem-1', name: 'Alex Rivera (You)', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces', role: 'member', status: 'online', currentFocus: 'Problem Set #3' },
-      { id: 'mem-5', name: 'Jordan Hayes', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces', role: 'lead', status: 'studying', currentFocus: 'Orthogonal bases' },
-      { id: 'mem-6', name: 'Sofia Kim', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=faces', role: 'member', status: 'online', currentFocus: 'Diagonalization proofs' },
+      { 
+        id: 'mem-user', 
+        name: 'You (Host)', 
+        role: 'lead', 
+        status: 'online', 
+        currentFocus: 'Problem Set #3 & Diagonalization',
+        isCurrentUser: true,
+        color: 'violet',
+      },
     ],
     sharedTasks: [
-      { id: 'gt-4', title: 'Verify Gram-Schmidt step 3 for Problem 22', assignedToMemberId: 'mem-5', dueDate: '2026-09-08T18:00', priority: 'medium', status: 'in_progress' },
-      { id: 'gt-5', title: 'Type LaTeX summary for Chapter 4 Eigenvalue Theorems', assignedToMemberId: 'mem-6', dueDate: '2026-09-09T20:00', priority: 'low', status: 'todo' },
+      { id: 'gt-4', title: 'Verify Gram-Schmidt step 3 for Problem 22', dueDate: '2026-09-08T18:00', priority: 'medium', status: 'in_progress' },
+      { id: 'gt-5', title: 'Type LaTeX summary for Chapter 4 Eigenvalue Theorems', dueDate: '2026-09-09T20:00', priority: 'low', status: 'todo' },
     ],
     notes: [
       {
         id: 'note-3',
         title: 'Gram-Schmidt Process Step-by-Step',
         content: `Given linearly independent vectors $v_1, v_2, \\dots, v_k$:\n\n1. $u_1 = v_1$\n2. $u_2 = v_2 - \\text{proj}_{u_1}(v_2) = v_2 - \\frac{\\langle v_2, u_1\\rangle}{\\langle u_1, u_1\\rangle} u_1$\n3. $u_3 = v_3 - \\text{proj}_{u_1}(v_3) - \\text{proj}_{u_2}(v_3)$\n\nNormalize: $e_i = \\frac{u_i}{\\|u_i\\|}$ for the orthonormal basis.`,
-        authorName: 'Jordan Hayes',
+        authorName: 'You',
         updatedAt: '2026-09-03T19:00:00Z',
         tags: ['orthogonality', 'gram-schmidt'],
       },
@@ -267,10 +277,10 @@ export const INITIAL_STUDY_GROUPS: StudyGroup[] = [
       { id: 'fc-6', question: 'What is the determinant of an orthogonal matrix Q?', answer: '+1 or -1.', hint: 'Q^T * Q = I, det(Q^T) = det(Q).' },
     ],
     chatMessages: [
-      { id: 'msg-4', senderId: 'mem-5', senderName: 'Jordan Hayes', senderAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=faces', text: 'Anyone stuck on problem 26? Remember to check if the eigenvalues are distinct before trying to diagonalize!', timestamp: 'Yesterday' },
+      { id: 'msg-4', senderId: 'mem-user', senderName: 'You (Host)', text: 'Room ready for MATH 220 study sessions. Invite friends with code MATH-220.', timestamp: 'Room Created' },
     ],
     upcomingSessions: [
-      { id: 'sess-3', title: 'Midterm Prep: Eigenvalues & Vector Spaces', date: '2026-09-11T14:00', durationMinutes: 120, topic: 'Review of past exam questions', location: 'Newton 204 Study Lounge', attendeeIds: ['mem-1', 'mem-5', 'mem-6'] },
+      { id: 'sess-3', title: 'Midterm Prep: Eigenvalues & Vector Spaces', date: '2026-09-11T14:00', durationMinutes: 120, topic: 'Review of past exam questions', location: 'Virtual Study Room', attendeeIds: ['mem-user'] },
     ],
     pomodoroState: {
       isRunning: false,
@@ -281,26 +291,33 @@ export const INITIAL_STUDY_GROUPS: StudyGroup[] = [
   },
   {
     id: 'group-bio',
-    name: 'Bio 210 Exam Drillers',
+    name: 'Bio 210 Exam Prep Room',
     courseCode: 'BIO 210',
     courseId: 'course-bio210',
-    description: 'Targeted study sessions, cell diagram flashcard drills, and peer quizzing for Bio 210 Midterm.',
+    description: 'Focused study sessions, cell diagram flashcard drills, and peer quizzing for Bio 210 Midterm.',
     color: 'emerald',
+    roomCode: 'BIO-210',
     members: [
-      { id: 'mem-1', name: 'Alex Rivera (You)', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces', role: 'member', status: 'studying', currentFocus: 'Receptor tyrosine kinases' },
-      { id: 'mem-7', name: 'Chloe Zhang', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces', role: 'lead', status: 'online', currentFocus: 'Creating flashcards' },
-      { id: 'mem-8', name: 'Marcus Brody', avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=100&h=100&fit=crop&crop=faces', role: 'member', status: 'studying', currentFocus: 'ATP Synthase proton gradient' },
+      { 
+        id: 'mem-user', 
+        name: 'You (Host)', 
+        role: 'lead', 
+        status: 'studying', 
+        currentFocus: 'Receptor tyrosine kinases & GPCRs',
+        isCurrentUser: true,
+        color: 'emerald',
+      },
     ],
     sharedTasks: [
-      { id: 'gt-6', title: 'Complete Chapter 4-6 review flashcard deck', assignedToMemberId: 'mem-7', dueDate: '2026-09-08T12:00', priority: 'urgent', status: 'in_progress' },
-      { id: 'gt-7', title: 'Mock Exam practice quiz with 30 multiple choice questions', assignedToMemberId: 'mem-1', dueDate: '2026-09-09T18:00', priority: 'high', status: 'todo' },
+      { id: 'gt-6', title: 'Complete Chapter 4-6 review flashcard deck', dueDate: '2026-09-08T12:00', priority: 'urgent', status: 'in_progress' },
+      { id: 'gt-7', title: 'Mock Exam practice quiz with 30 multiple choice questions', dueDate: '2026-09-09T18:00', priority: 'high', status: 'todo' },
     ],
     notes: [
       {
         id: 'note-4',
         title: 'G-Protein Coupled Receptor (GPCR) Signaling Steps',
         content: `1. Ligand binds extracellular domain of GPCR.\n2. Conformational change activates G-alpha subunit to swap GDP for GTP.\n3. G-alpha dissociates and activates Adenylyl Cyclase.\n4. Adenylyl Cyclase synthesizes cAMP from ATP.\n5. cAMP activates Protein Kinase A (PKA) to phosphorylate downstream target proteins.\n6. Hydrolysis of GTP back to GDP terminates signaling.`,
-        authorName: 'Chloe Zhang',
+        authorName: 'You',
         updatedAt: '2026-09-04T12:00:00Z',
         tags: ['gpcr', 'signaling', 'exam-must-know'],
       },
@@ -310,10 +327,10 @@ export const INITIAL_STUDY_GROUPS: StudyGroup[] = [
       { id: 'fc-8', question: 'What drives the F0 rotor subunit in mitochondrial ATP synthase?', answer: 'The proton motive force (H+ gradient from the intermembrane space back into the matrix).', hint: 'Chemiosmotic coupling.' },
     ],
     chatMessages: [
-      { id: 'msg-5', senderId: 'mem-7', senderName: 'Chloe Zhang', senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces', text: 'Hey guys, the professor hinted that GPCR cascades will be at least 20 points on the exam!', timestamp: '2 days ago' },
+      { id: 'msg-5', senderId: 'mem-user', senderName: 'You (Host)', text: 'Welcome to Bio 210 study room! Invite friends using room code BIO-210.', timestamp: 'Room Created' },
     ],
     upcomingSessions: [
-      { id: 'sess-4', title: 'High-Yield Bio Midterm Rapid Review', date: '2026-09-09T19:00', durationMinutes: 75, topic: 'Chapters 1-6 High Yield Concepts', location: 'BioMed 108 / Group Study Room', attendeeIds: ['mem-1', 'mem-7', 'mem-8'] },
+      { id: 'sess-4', title: 'High-Yield Bio Midterm Rapid Review', date: '2026-09-09T19:00', durationMinutes: 75, topic: 'Chapters 1-6 High Yield Concepts', location: 'Virtual Study Room', attendeeIds: ['mem-user'] },
     ],
     pomodoroState: {
       isRunning: false,

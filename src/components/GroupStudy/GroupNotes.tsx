@@ -9,12 +9,13 @@ interface GroupNotesProps {
 
 export const GroupNotes: React.FC<GroupNotesProps> = ({ group }) => {
   const { addGroupNote } = useApp();
+  const notes = Array.isArray(group.notes) ? group.notes : [];
 
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newTags, setNewTags] = useState('');
-  const [selectedNote, setSelectedNote] = useState<StudyNote | null>(group.notes[0] || null);
+  const [selectedNote, setSelectedNote] = useState<StudyNote | null>(notes[0] || null);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +26,7 @@ export const GroupNotes: React.FC<GroupNotesProps> = ({ group }) => {
     addGroupNote(group.id, {
       title: newTitle.trim(),
       content: newContent.trim(),
-      authorName: 'Alex Rivera (You)',
+      authorName: 'You',
       tags: tagsArray.length > 0 ? tagsArray : ['study-guide'],
     });
 
@@ -98,7 +99,7 @@ export const GroupNotes: React.FC<GroupNotesProps> = ({ group }) => {
         )}
 
         <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
-          {group.notes.map(note => {
+          {notes.map(note => {
             const isSelected = selectedNote?.id === note.id;
 
             return (
@@ -128,7 +129,7 @@ export const GroupNotes: React.FC<GroupNotesProps> = ({ group }) => {
             );
           })}
 
-          {group.notes.length === 0 && (
+          {notes.length === 0 && (
             <div className="text-center py-8 text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
               No shared notes yet. Start a study guide!
             </div>

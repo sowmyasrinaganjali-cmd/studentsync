@@ -45,7 +45,7 @@ export const TaskList: React.FC = () => {
         const matchTitle = task.title.toLowerCase().includes(query);
         const matchDesc = task.description.toLowerCase().includes(query);
         const matchCourse = course ? (course.name.toLowerCase().includes(query) || course.code.toLowerCase().includes(query)) : false;
-        const matchTags = task.tags.some(t => t.toLowerCase().includes(query));
+        const matchTags = (task.tags || []).some(t => t.toLowerCase().includes(query));
         if (!matchTitle && !matchDesc && !matchCourse && !matchTags) {
           return false;
         }

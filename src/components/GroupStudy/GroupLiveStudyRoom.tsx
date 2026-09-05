@@ -9,22 +9,38 @@ import {
   Target, 
   Users, 
   Sparkles,
-  Edit3
+  Edit3,
+  UserPlus,
+  Copy,
+  Check,
+  X
 } from 'lucide-react';
 import { StudyGroup } from '../../types';
 import { useApp } from '../../context/AppContext';
+import { MemberAvatar } from './MemberAvatar';
 
 interface GroupLiveStudyRoomProps {
   group: StudyGroup;
 }
 
 export const GroupLiveStudyRoom: React.FC<GroupLiveStudyRoomProps> = ({ group }) => {
-  const { updatePomodoro, resetPomodoro } = useApp();
+  const { updatePomodoro, resetPomodoro, setInviteModalGroupId, removeFriendFromGroup } = useApp();
+  const pomodoroState = group.pomodoroState || { isRunning: false, mode: 'focus', secondsRemaining: 25 * 60, currentTopic: 'Study Session' };
   const [isEditingTopic, setIsEditingTopic] = useState(false);
-  const [topicInput, setTopicInput] = useState(group.pomodoroState.currentTopic);
-  const [myFocusGoal, setMyFocusGoal] = useState('Implementing AVL tree rotations');
+  const [topicInput, setTopicInput] = useState(pomodoroState.currentTopic);
+  const [myFocusGoal, setMyFocusGoal] = useState('Study session review');
+  const [copied, setCopied] = useState(false);
 
-  const { isRunning, mode, secondsRemaining, currentTopic } = group.pomodoroState;
+  const members = Array.isArray(group.members) ? group.members : [];
+  const roomCode = group.roomCode || `${group.courseCode.replace(/[^A-Za-z0-9]/g, '').slice(0, 4).toUpperCase()}-101`;
+
+  const copyRoomCode = () => {
+    navigator.clipboard.writeText(roomCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const { isRunning, mode, secondsRemaining, currentTopic } = pomodoroState;
 
   const minutes = Math.floor(secondsRemaining / 60);
   const seconds = secondsRemaining % 60;
@@ -212,45 +228,73 @@ export const GroupLiveStudyRoom: React.FC<GroupLiveStudyRoomProps> = ({ group })
 
       {/* Live Study Squad Participants Roster */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-violet-600" />
-            <h3 className="text-sm font-bold text-slate-900">Study Squad Presence</h3>
+            <h3 className="text-sm font-bold text-slate-900">Study Squad Members</h3>
+            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              {members.length} in room
+            </span>
           </div>
-          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-            {group.members.filter(m => m.status === 'studying' || m.status === 'online').length} Active Now
-          </span>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={copyRoomCode}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono font-semibold rounded-lg transition-colors"
+              title="Click to copy room code"
+            >
+              <span>Code: {roomCode}</span>
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
+            </button>
+
+            <button
+              onClick={() => setInviteModalGroupId(group.id)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shadow-xs"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Invite Friends</span>
+            </button>
+          </div>
         </div>
 
+        {members.length === 1 && (
+          <div className="mb-4 p-4 bg-indigo-50/70 border border-indigo-100 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold text-indigo-950">
+                You're in this room solo right now
+              </p>
+              <p className="text-xs text-indigo-700 mt-0.5">
+                Invite friends and classmates to join your live study timer and problem solving session using room code <strong className="font-mono text-indigo-900">{roomCode}</strong>.
+              </p>
+            </div>
+            <button
+              onClick={() => setInviteModalGroupId(group.id)}
+              className="shrink-0 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors"
+            >
+              Invite Friends Now
+            </button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {group.members.map(member => {
-            const isUser = member.name.includes('(You)');
-            const currentFocusText = isUser ? myFocusGoal : member.currentFocus;
+          {members.map(member => {
+            const isUser = member.isCurrentUser || member.name.includes('(You)') || member.name.includes('(Host)');
+            const currentFocusText = isUser ? myFocusGoal : (member.currentFocus || 'Studying together');
 
             return (
               <div
                 key={member.id}
-                className={`p-3.5 rounded-xl border transition-colors flex items-start gap-3 ${
+                className={`p-3.5 rounded-xl border transition-colors flex items-start gap-3 relative group/card ${
                   member.status === 'studying'
                     ? 'bg-indigo-50/40 border-indigo-200'
                     : 'bg-white border-slate-200'
                 }`}
               >
-                <div className="relative shrink-0">
-                  <img
-                    src={member.avatar}
-                    alt={member.name}
-                    className="w-10 h-10 rounded-full object-cover border border-slate-200"
-                    referrerPolicy="no-referrer"
-                  />
-                  <span
-                    className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
-                      member.status === 'studying'
-                        ? 'bg-indigo-600'
-                        : member.status === 'online'
-                          ? 'bg-emerald-500'
-                          : 'bg-amber-400'
-                    }`}
+                <div className="shrink-0">
+                  <MemberAvatar 
+                    member={member} 
+                    size="md" 
+                    showStatus={true} 
                   />
                 </div>
 
@@ -259,16 +303,26 @@ export const GroupLiveStudyRoom: React.FC<GroupLiveStudyRoomProps> = ({ group })
                     <h4 className="text-xs font-bold text-slate-900 truncate">
                       {member.name}
                     </h4>
-                    {member.role === 'lead' && (
-                      <span className="text-[10px] font-bold text-violet-600 bg-violet-50 px-1 rounded-sm">
-                        Lead
+                    {member.role === 'lead' ? (
+                      <span className="text-[10px] font-bold text-violet-700 bg-violet-50 px-1.5 py-0.5 rounded-md border border-violet-200/60">
+                        Host
                       </span>
+                    ) : (
+                      !isUser && (
+                        <button
+                          onClick={() => removeFriendFromGroup(group.id, member.id)}
+                          className="opacity-0 group-hover/card:opacity-100 p-0.5 text-slate-400 hover:text-rose-500 rounded transition-opacity"
+                          title="Remove from room"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )
                     )}
                   </div>
 
                   <div className="text-[11px] text-slate-500 capitalize flex items-center gap-1 mt-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                    <span>{member.status}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span>{member.status || 'online'}</span>
                   </div>
 
                   {currentFocusText && (

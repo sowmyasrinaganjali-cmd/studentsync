@@ -34,7 +34,7 @@ export const GroupFlashcards: React.FC<GroupFlashcardsProps> = ({ group }) => {
   const [newAnswer, setNewAnswer] = useState('');
   const [newHint, setNewHint] = useState('');
 
-  const cards = group.flashcards;
+  const cards = Array.isArray(group.flashcards) ? group.flashcards : [];
   const currentCard = cards[currentIndex];
 
   const handleNext = () => {
